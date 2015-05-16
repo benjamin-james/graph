@@ -53,17 +53,17 @@ struct graph *graph_edge(struct graph *v_from, struct graph *v_to)
  * the vertex is set to NULL if found so it can be properly cleaned
  * up later.
  */
-void graph_remove_vertex(struct graph **g, void *v)
+void graph_remove_vertex(struct graph **g, struct graph *v)
 {
 	struct graph *temp, *prev = NULL;
 	for (temp = *g; temp; prev = temp, temp = temp->vertex) {
-		if (!memcmp(temp->data, v, temp->size)) {
+		if (temp == v) {
 			free(temp->data);
 			temp->data = NULL;
 			if (temp != *g)
-				prev->next = temp->next;
+				prev->vertex = temp->vertex;
 			else
-				*g = temp->next;
+				*g = temp->vertex;
 			for (prev = temp->edge; prev; prev = prev->edge) {
 				free(prev->data);
 				free(prev);
