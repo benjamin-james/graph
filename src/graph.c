@@ -62,66 +62,54 @@ int graph_get_edge(struct vertex *from, struct vertex *to, struct edge **e_ret)
 	return -1;
 }
 
-int graph_add_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret)
+struct vertex * graph_add_vertex(struct graph *g, const __DATA_T data)
 {
 	uintptr_t i;
 	for (i = g->hash(data) % g->size; i < g->size; i++) {
 		if (g->vertices[i].is_set) {
 			if (!g->data_cmp(g->vertices[i].data, data)) {
-				return -1;
+				return NULL;
 			}
 			continue;
 		}
 		g->vertices[i].is_set = 1;
 		g->vertices[i].list = NULL;
-		memcpy(&g->vertices[i].data, &data, sizeof data);
-		if (v_ret) {
-			*v_ret = g->vertices + i;
-		}
-		return 0;
+		g->vertices[i].data = data;
+		return g->vertices + i;
 	}
-	return -1;
+	return NULL;
 }
 
-static int edge_new(const __WEIGHT_T weight, struct vertex *to, struct edge *next, struct edge **ret)
+static struct edge * edge_new(const __WEIGHT_T weight, struct vertex *to, struct edge *next)
 {
 	struct edge *e = malloc(sizeof *e);
 	if (!e) {
 		perror("malloc");
-		return -1;
+		return NULL;
 	}
-	memcpy(&e->weight, &weight, sizeof weight);
+	e->weight = weight;
 	e->to = to;
 	e->next = next;
-	*ret = e;
-	return 0;
+	return e;
 }
-int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, const __WEIGHT_T weight, struct edge **e_ret)
+struct edge * graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, const __WEIGHT_T weight)
 {
 	struct edge *e, *prev;
-	if (to == from->list->to) {
-		return -1;
-	} else if (g->weight_cmp(weight, from->list->weight) >= 0) {
-		int ret = edge_new(weight, to, from->list, &from->list);
-		if (e_ret) {
-			*e_ret = from->list;
-		}
-		return ret;
+	if (from->list && to == from->list->to) {
+		return NULL;
+	} else if (!from->list || g->weight_cmp(weight, from->list->weight) >= 0) {
+		return (from->list = edge_new(weight, to, from->list));
 	}
 	for (prev = from->list, e = prev->next; prev != NULL; prev = e, e = e->next) {
-		if (to == e->to) {
-			return -1;
+		if (e && to == e->to) {
+			return NULL;
 		}
-		if (g->weight_cmp(weight, e->weight) < 0) {
+		if (e && g->weight_cmp(weight, e->weight) < 0) {
 			continue;
 		}
-		int ret = edge_new(weight, to, e, &prev->next);
-		if (e_ret) {
-			*e_ret = prev->next;
-		}
-		return ret;
+		return (prev->next = edge_new(weight, to, e));
 	}
-	return -1;
+	return NULL;
 }
 
 int graph_remove_vertex(struct vertex *v)

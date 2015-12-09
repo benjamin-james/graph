@@ -40,8 +40,8 @@ int graph_delete(struct graph *g);
 int graph_get_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret);
 int graph_get_edge(struct vertex *from, struct vertex *to, struct edge **e_ret);
 
-int graph_add_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret);
-int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, const __WEIGHT_T weight, struct edge **e_ret);
+struct vertex *graph_add_vertex(struct graph *g, const __DATA_T data);
+struct edge *graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, const __WEIGHT_T weight);
 
 int graph_remove_vertex(struct vertex *v);
 int graph_remove_edge(struct edge *e);
