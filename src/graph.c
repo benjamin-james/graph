@@ -31,6 +31,7 @@ int graph_delete(struct graph *g)
 		}
 		graph_remove_vertex(g->vertices + i);
 	}
+	free(g->vertices);
 	return 0;
 }
 
@@ -61,7 +62,7 @@ int graph_get_edge(struct vertex *from, struct vertex *to, struct edge **e_ret)
 	return -1;
 }
 
-int graph_add_vertex(struct graph *g, const __DATA_T data)
+int graph_add_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret)
 {
 	uintptr_t i;
 	for (i = g->hash(data) % g->size; i < g->size; i++) {
@@ -74,6 +75,9 @@ int graph_add_vertex(struct graph *g, const __DATA_T data)
 		g->vertices[i].is_set = 1;
 		g->vertices[i].list = NULL;
 		memcpy(&g->vertices[i].data, &data, sizeof data);
+		if (v_ret) {
+			*v_ret = g->vertices + i;
+		}
 		return 0;
 	}
 	return -1;
@@ -99,7 +103,9 @@ int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, cons
 		return -1;
 	} else if (g->weight_cmp(weight, from->list->weight) >= 0) {
 		int ret = edge_new(weight, to, from->list, &from->list);
-		*e_ret = from->list;
+		if (e_ret) {
+			*e_ret = from->list;
+		}
 		return ret;
 	}
 	for (prev = from->list, e = prev->next; prev != NULL; prev = e, e = e->next) {
@@ -110,7 +116,9 @@ int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, cons
 			continue;
 		}
 		int ret = edge_new(weight, to, e, &prev->next);
-		*e_ret = prev->next;
+		if (e_ret) {
+			*e_ret = prev->next;
+		}
 		return ret;
 	}
 	return -1;
