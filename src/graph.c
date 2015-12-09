@@ -8,7 +8,7 @@
 
 #include "graph.h"
 
-int graph_init(struct graph *g, size_t alloc, int (*data_cmp)(const __DATA_T left, const __DATA_T right), int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right), intptr_t (*hash)(const __DATA_T data))
+int graph_init(struct graph *g, size_t alloc, int (*data_cmp)(const __DATA_T left, const __DATA_T right), int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right), uintptr_t (*hash)(const __DATA_T data))
 {
 	g->vertices = calloc(alloc, sizeof *g->vertices);
 	if (!g->vertices) {
@@ -24,8 +24,7 @@ int graph_init(struct graph *g, size_t alloc, int (*data_cmp)(const __DATA_T lef
 
 int graph_delete(struct graph *g)
 {
-	intptr_t i;
-	struct edge *e, *temp;
+	uintptr_t i;
 	for (i = 0; i < g->size; i++) {
 		if (!g->vertices[i].is_set) {
 			continue;
@@ -38,7 +37,7 @@ int graph_delete(struct graph *g)
 
 int graph_get_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret)
 {
-	intptr_t i;
+	uintptr_t i;
 	for (i = g->hash(data) % g->size; i < g->size; i++) {
 		if (!g->vertices[i].is_set) {
 			break;
@@ -64,7 +63,7 @@ int graph_get_edge(struct vertex *from, struct vertex *to, struct edge **e_ret)
 
 int graph_add_vertex(struct graph *g, const __DATA_T data)
 {
-	intptr_t i;
+	uintptr_t i;
 	for (i = g->hash(data) % g->size; i < g->size; i++) {
 		if (g->vertices[i].is_set) {
 			if (!g->data_cmp(g->vertices[i].data, data)) {
@@ -99,7 +98,9 @@ int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, cons
 	if (to == from->list->to) {
 		return -1;
 	} else if (g->weight_cmp(weight, from->list->weight) >= 0) {
-		return edge_new(weight, to, from->list, &from->list);
+		int ret = edge_new(weight, to, from->list, &from->list);
+		*e_ret = from->list;
+		return ret;
 	}
 	for (prev = from->list, e = prev->next; prev != NULL; prev = e, e = e->next) {
 		if (to == e->to) {
@@ -108,7 +109,9 @@ int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, cons
 		if (g->weight_cmp(weight, e->weight) < 0) {
 			continue;
 		}
-		return edge_new(weight, to, e, &prev->next);
+		int ret = edge_new(weight, to, e, &prev->next);
+		*e_ret = prev->next;
+		return ret;
 	}
 	return -1;
 }

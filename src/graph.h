@@ -31,10 +31,10 @@ struct graph {
 	size_t size;
 	int (*data_cmp)(const __DATA_T left, const __DATA_T right);
 	int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right);
-	intptr_t (*hash)(const __DATA_T data);
+	uintptr_t (*hash)(const __DATA_T data);
 };
 
-int graph_init(struct graph *g, size_t alloc, int (*data_cmp)(const __DATA_T left, const __DATA_T right), int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right), intptr_t (*hash)(const __DATA_T data));
+int graph_init(struct graph *g, size_t alloc, int (*data_cmp)(const __DATA_T left, const __DATA_T right), int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right), uintptr_t (*hash)(const __DATA_T data));
 int graph_delete(struct graph *g);
 
 int graph_get_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret);
