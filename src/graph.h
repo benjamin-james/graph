@@ -1,50 +1,49 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "string.h" /* size_t */
-/*
- * Graph
- * a list of vertices (vertex) with data
- * and a list of edges (edge) on each
- * vertex that contains a pointer to the
- * vertex (vertex) and the next item (edge)
- *
- * The data will most likely implemented
- * as a struct (it is highly recommended)
- */
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h> /* size_t */
 
-struct graph {
-	void *data;
-	size_t size;
-	struct graph *edge;
-	struct graph *vertex;
+
+#ifndef __WEIGHT_T
+#define __WEIGHT_T double
+#endif
+
+#ifndef __DATA_T
+#define __DATA_T long
+#endif
+
+struct edge {
+	__WEIGHT_T weight;
+	struct vertex *to;
+	struct edge *next;
 };
 
-/* Gets the vertex defined by v */
-struct graph *graph_vertex(struct graph **g, void *v);
+struct vertex {
+	__DATA_T data;
+	bool is_set;
+	struct edge *list;
+};
 
-/* Gets the edge defined by e */
-struct graph *graph_edge_data(struct graph **g, void *e);
+struct graph {
+	struct vertex *vertices;
+	size_t size;
+	int (*data_cmp)(const __DATA_T left, const __DATA_T right);
+	int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right);
+	intptr_t (*hash)(const __DATA_T data);
+};
 
-/* Gets the edge defined from v_from to v_to */
-struct graph *graph_edge(struct graph *v_from, struct graph *v_to);
+int graph_init(struct graph *g, size_t alloc, int (*data_cmp)(const __DATA_T left, const __DATA_T right), int (*weight_cmp)(const __WEIGHT_T left, const __WEIGHT_T right), intptr_t (*hash)(const __DATA_T data));
+int graph_delete(struct graph *g);
 
-/* Cleans up graph, i.e. removes all NULL elements, returns 0 if nothing had been done */
-int graph_clean(struct graph **g);
+int graph_get_vertex(struct graph *g, const __DATA_T data, struct vertex **v_ret);
+int graph_get_edge(struct vertex *from, struct vertex *to, struct edge **e_ret);
 
-/* Sees if the vertex v_a is adjacent to vertex v_b */
-int graph_adjacent(struct graph *v_a, struct graph *v_b);
+int graph_add_vertex(struct graph *g, const __DATA_T data);
+int graph_add_edge(struct graph *g, struct vertex *from, struct vertex *to, const __WEIGHT_T weight, struct edge **e_ret);
 
-/* Adds the vertex v to the graph, returns its pointer */
-struct graph *graph_add_vertex(struct graph **g, void *v, size_t size);
-
-/* Removes the vertex at v */
-void graph_remove_vertex(struct graph **g, struct graph *v);
-
-/* Adds an edge from v_from to v_to defined by data */
-struct graph *graph_add_edge(struct graph *v_from, struct graph *v_to, void *data, size_t size);
-
-/* Removes the edge defined by v_from to v_to */
-void graph_remove_edge(struct graph *v_from, struct graph *v_to);
+int graph_remove_vertex(struct vertex *v);
+int graph_remove_edge(struct edge *e);
 
 #endif
