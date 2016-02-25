@@ -1,0 +1,5 @@
+
+* graph
+a graph implementation
+
+To use, please =#define= =DATA_T= and =WEIGHT_T= so it works the way you want.
