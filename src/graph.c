@@ -74,7 +74,8 @@ struct vertex * graph_add_vertex(struct graph *g, const DATA_T data)
 static void _add_edge(struct edge **list, struct edge *n, int (*weight_cmp)(const WEIGHT_T left, const WEIGHT_T right))
 {
 	struct edge *tmp = *list, *prev = NULL;
-	while (tmp != NULL && weight_cmp(tmp->weight, n->weight) <= 0) {		prev = tmp;
+	while (tmp != NULL && weight_cmp(tmp->weight, n->weight) <= 0) {
+		prev = tmp;
 		tmp = tmp->next;
 	}
 	n->next = tmp;
